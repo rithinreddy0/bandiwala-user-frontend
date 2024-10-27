@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, List, MapPin } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, List } from 'lucide-react';
+import { context } from './Home';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const {signInOpen,setSignInOpen,signUpOpen,setSignUpOpen}=useContext(context)
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Dummy state for user logged-in status
+
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -37,10 +40,10 @@ const Navbar = () => {
       <nav className={`md:flex ${isMobileMenuOpen ? 'block' : 'hidden'} md:block mt-4 md:mt-0`}>
         {!isLoggedIn ? (
           <>
-            <button onClick={() => {}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+            <button onClick={() => {setSignInOpen(!signInOpen)}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
               <User className="w-5 h-5 mr-1" /> Sign In
             </button>
-            <button onClick={() => {}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+            <button onClick={() => {setSignUpOpen(!signUpOpen)}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
               <User className="w-5 h-5 mr-1" /> Sign Up
             </button>
           </>
@@ -77,10 +80,10 @@ const Navbar = () => {
             </Link>
             {!isLoggedIn ? (
               <>
-                <button onClick={() => {}} className="flex items-center text-lg">
+                <button onClick={() => {setSignInOpen(!signInOpen)}} className="flex items-center text-lg">
                   <User className="w-6 h-6 mr-2" /> Sign In
                 </button>
-                <button onClick={() => {}} className="flex items-center text-lg">
+                <button onClick={() => {setSignUpOpen(!signUpOpen)}} className="flex items-center text-lg">
                   <User className="w-6 h-6 mr-2" /> Sign Up
                 </button>
               </>

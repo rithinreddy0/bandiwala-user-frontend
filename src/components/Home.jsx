@@ -1,5 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef,createContext } from 'react';
 import { Link } from 'react-router-dom';
+import SignIn from './Authentication/SignIn';
+import SignUp from './Authentication/SignUp';
+import Navbar from './Navbar';
+
+
 
 // Mock data
 const foodCategories = [
@@ -23,8 +28,15 @@ const restaurants = [
   { id: 2, name: 'The Fusion Lounge', rating: 4.0, cuisines: ['North Indian', 'South Indian', 'Chinese'], location: 'Railway Station', deliveryTime: '60-65 mins', price: '₹400 for two' },
 ];
 
+
+export const context=createContext();
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [signInOpen,setSignInOpen]=useState(false)  
+  const [signUpOpen,setSignUpOpen]=useState(false)
+
+
+
   const menuRef = useRef(null);
 
   const handleClickOutside = (event) => {
@@ -41,6 +53,14 @@ function Home() {
   }, []);
 
   return (
+
+    <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen}}>
+      <Navbar/>
+      <div> 
+        {signInOpen&&<SignIn/>}
+        {signUpOpen&&<SignUp/>}
+      </div>
+    
     <div className="p-4 max-w-screen-lg mx-auto">
       <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">What's on your mind?</h2>
       <div className="flex space-x-6 overflow-x-auto pb-4 scrollbar-hide">
@@ -85,6 +105,8 @@ function Home() {
         </div>
       )}
     </div>
+    </context.Provider>
+    
   );
 }
 
