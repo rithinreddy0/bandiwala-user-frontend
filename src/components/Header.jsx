@@ -1,88 +1,111 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, HelpCircle, User, MapPin, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, List, MapPin } from 'lucide-react';
 
-function Header({ onOpenModal }) {
+const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Dummy state for user logged-in status
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    <header className="flex items-center justify-between p-4 border-b">
-      <div className="flex items-center space-x-4">
-        <h1 className="ultra-regular text-primary ml-5 text-lg md:text-2xl">BANDIWALA</h1>
-        <div className="flex items-center space-x-2">
-          <span className="font-semibold text-sm md:text-base">VNRVJIET</span>
-          <MapPin className="w-5 h-5 text-black-500 mr-2" />
-        </div>
-      </div>
-
-      {/* Mobile Menu Toggle Button */}
-      <div className="md:hidden flex items-center">
-        <button onClick={toggleMobileMenu}>
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6 text-black" />
-          ) : (
-            <Menu className="w-6 h-6 text-black" />
-          )}
+    <header className="bg-white shadow-md py-4 px-6 md:flex md:justify-between md:items-center">
+      {/* Left Side: Logo and Location */}
+      <div className="flex items-center justify-between md:justify-start w-full md:w-auto">
+        <h1 className="text-xl font-bold text-orange-600">Bandi Wala</h1>
+        
+        <button onClick={toggleMobileMenu} className="md:hidden">
+          {isMobileMenuOpen ? <X className="w-6 h-6 text-black" /> : <Menu className="w-6 h-6 text-black" />}
         </button>
       </div>
 
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex items-center space-x-6">
-        <Link to="/search" className="flex items-center space-x-1 text-sm md:text-base">
-          <Search className="w-5 h-5" />
-          <span>Search</span>
+      
+      {/* Centered Search Bar for Desktop */}
+      <div className="hidden md:flex relative mx-auto w-1/2">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+        />
+      </div>
+
+
+      {/* Right Side: Links and Icons */}
+      <nav className={`md:flex ${isMobileMenuOpen ? 'block' : 'hidden'} md:block mt-4 md:mt-0`}>
+        {!isLoggedIn ? (
+          <>
+            <button onClick={() => {}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+              <User className="w-5 h-5 mr-1" /> Sign In
+            </button>
+            <button onClick={() => {}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+              <User className="w-5 h-5 mr-1" /> Sign Up
+            </button>
+          </>
+        ) : (
+          <Link to="/profile" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+            <User className="w-5 h-5 mr-1" /> Profile
+          </Link>
+        )}
+        <Link to="/services" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+          <List className="w-5 h-5 mr-1" /> Orders
         </Link>
-        <Link to="/offers" className="flex items-center space-x-1 text-sm md:text-base">
-          <span>Offers</span>
-          <span className="text-xs bg-orange-500 text-white px-1 rounded">NEW</span>
+        <Link to="/cart" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
+          <ShoppingCart className="w-5 h-5 mr-1" /> Cart
         </Link>
-        <Link to="/help" className="flex items-center space-x-1 text-sm md:text-base">
-          <HelpCircle className="w-5 h-5" />
-          <span>Help</span>
-        </Link>
-        <button onClick={() => {setIsMobileMenuOpen(!isMobileMenuOpen); onOpenModal(true)}} className="flex items-center space-x-1 text-sm md:text-base">
-          <User className="w-5 h-5" />
-          <span>Sign In</span>
-        </button>
-        <button className="flex items-center space-x-1 text-sm md:text-base">
-          <ShoppingCart className="w-5 h-5" />
-          <span>Cart</span>
-        </button>
       </nav>
 
-      {/* Mobile Menu */}
+
+      {/* Mobile Full-Screen Menu */}
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white border border-t-0 shadow-md md:hidden z-10">
-          <nav className="flex flex-col items-start p-4">
-            <Link to="/search" className="flex items-center space-x-1 py-2 text-sm">
-              <Search className="w-5 h-5" />
-              <span>Search</span>
-            </Link>
-            <Link to="/offers" className="flex items-center space-x-1 py-2 text-sm">
-              <span>Offers</span>
-              <span className="text-xs bg-orange-500 text-white px-1 rounded">NEW</span>
-            </Link>
-            <Link to="/help" className="flex items-center space-x-1 py-2 text-sm">
-              <HelpCircle className="w-5 h-5" />
-              <span>Help</span>
-            </Link>
-            <button onClick={() => onOpenModal(true)} className="flex items-center space-x-1 py-2 text-sm">
-              <User className="w-5 h-5" />
-              <span>Sign In</span>
+        <div className="fixed inset-0 bg-white z-20 p-4 flex flex-col items-start">
+          <div className="flex items-center justify-between w-full mb-4">
+            <h1 className="text-lg font-bold">bandi Wala</h1>
+            <button onClick={toggleMobileMenu}>
+              <X className="w-6 h-6 text-black" />
             </button>
-            <button className="flex items-center space-x-1 py-2 text-sm">
-              <ShoppingCart className="w-5 h-5" />
-              <span>Cart</span>
-            </button>
+          </div>
+          {/* Mobile Navigation Links */}
+          <nav className="flex flex-col space-y-4 w-full">
+            <Link to="/services" className="flex items-center text-lg" onClick={toggleMobileMenu}>
+              <List className="w-6 h-6 mr-2" /> Orders
+            </Link>
+            <Link to="/cart" className="flex items-center text-lg" onClick={toggleMobileMenu}>
+              <ShoppingCart className="w-6 h-6 mr-2" /> Cart
+            </Link>
+            {!isLoggedIn ? (
+              <>
+                <button onClick={() => {}} className="flex items-center text-lg">
+                  <User className="w-6 h-6 mr-2" /> Sign In
+                </button>
+                <button onClick={() => {}} className="flex items-center text-lg">
+                  <User className="w-6 h-6 mr-2" /> Sign Up
+                </button>
+              </>
+            ) : (
+              <Link to="/profile" className="flex items-center text-lg" onClick={toggleMobileMenu}>
+                <User className="w-6 h-6 mr-2" /> Profile
+              </Link>
+            )}
           </nav>
         </div>
       )}
+
+      {/* Search Bar in Mobile View */}
+      <div className="md:hidden mt-4 w-full">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
     </header>
   );
-}
+};
 
-export default Header;
+export default Navbar;
