@@ -1,11 +1,12 @@
 import React, { useState,useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, List } from 'lucide-react';
-import { context } from './Home';
+import { context } from '../App';
+
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const {signInOpen,setSignInOpen,signUpOpen,setSignUpOpen}=useContext(context)
+  const {signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,token,setToken}=useContext(context)
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Dummy state for user logged-in status
 
 
@@ -38,7 +39,7 @@ const Navbar = () => {
 
       {/* Right Side: Links and Icons */}
       <nav className={`md:flex ${isMobileMenuOpen ? 'block' : 'hidden'} md:block mt-4 md:mt-0`}>
-        {!isLoggedIn ? (
+        {token&&token ? (
           <>
             <button onClick={() => {setSignInOpen(!signInOpen)}} className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
               <User className="w-5 h-5 mr-1" /> Sign In
@@ -52,9 +53,6 @@ const Navbar = () => {
             <User className="w-5 h-5 mr-1" /> Profile
           </Link>
         )}
-        <Link to="/services" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
-          <List className="w-5 h-5 mr-1" /> Orders
-        </Link>
         <Link to="/cart" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:text-orange-600">
           <ShoppingCart className="w-5 h-5 mr-1" /> Cart
         </Link>
@@ -72,13 +70,10 @@ const Navbar = () => {
           </div>
           {/* Mobile Navigation Links */}
           <nav className="flex flex-col space-y-4 w-full">
-            <Link to="/services" className="flex items-center text-lg" onClick={toggleMobileMenu}>
-              <List className="w-6 h-6 mr-2" /> Orders
-            </Link>
             <Link to="/cart" className="flex items-center text-lg" onClick={toggleMobileMenu}>
               <ShoppingCart className="w-6 h-6 mr-2" /> Cart
             </Link>
-            {!isLoggedIn ? (
+            {token&&token ? (
               <>
                 <button onClick={() => {setSignInOpen(!signInOpen)}} className="flex items-center text-lg">
                   <User className="w-6 h-6 mr-2" /> Sign In

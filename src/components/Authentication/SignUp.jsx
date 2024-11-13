@@ -1,7 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { User, Mail, Lock, UserCheck, ArrowRightCircle, Eye, EyeOff, X } from 'lucide-react';
-import { context } from '../Home';
+import { context } from '../../App';
+import { useSignUpMutation } from '../../App/Services/AuthenticationApi';
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +11,9 @@ const SignUp = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { setSignInOpen, signUpOpen, setSignUpOpen } = useContext(context);
+  const { signInOpen, setSignInOpen, signUpOpen, setSignUpOpen, otpOpen, setOtpOpen, signUpInEmail,setSignUpInEmail } = useContext(context);
+
+  const [signUp] = useSignUpMutation();
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePassword = (password) => password.length >= 6;
@@ -31,13 +34,24 @@ const SignUp = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      console.log('Username:', username);
-      console.log('Email:', email);
-      console.log('Password:', password);
-      setLoading(false);
-      setError(''); // Clear error after successful input
-    }, 2000);
+    signUp({ name: username, email, password })
+      .unwrap()
+      .then((response) => {
+          alert(response.message);
+          setLoading(false);
+          setSignUpOpen(false);
+          setSignUpInEmail( email );
+          setOtpOpen(true);
+        
+      })
+      .catch((err) => {
+        setLoading(false);
+        if (err.status === 400) {
+          setError(err.data.message);
+        } else {
+          setError('Server error. Please try again later.');
+        }
+      });
   };
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);

@@ -1,7 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, UserPlus, ArrowRightCircle, Eye, EyeOff, X } from 'lucide-react';
-import { context } from '../Home';
+import { context } from '../../App';
+import { useSignInMutation } from '../../App/Services/AuthenticationApi';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +10,10 @@ const SignIn = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signInOpen, setSignInOpen, setSignUpOpen } = useContext(context);
+  const { signInOpen, setSignInOpen, setSignUpOpen, userDetails, setUserDetails, token, setToken,forgotPasswordOpen,setForgotPasswordOpen,signUpInEmail,setSignUpInEmail } = useContext(context);
+
+  const [signIn] = useSignInMutation();
+  const navigate = useNavigate();
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
@@ -31,12 +35,37 @@ const SignIn = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      console.log('Email:', email);
-      console.log('Password:', password);
-      setLoading(false);
-      setError(''); // Clear error on successful input
-    }, 2000);
+    signIn({ email, password })
+      .then((response) => {
+        setLoading(false);
+
+        if (response.error) {
+          const status = response.error.status;
+
+          // Handle specific status codes from backend
+          switch (status) {
+            case 400:
+              setError(response.error.data.message); // e.g., User does not exist, Invalid password, or User not verified
+              break;
+            case 500:
+              setError('Server error occurred. Please try again later.');
+              break;
+            default:
+              setError('Unexpected error occurred. Please try again.');
+          }
+        } else {
+          setSignInOpen(false);
+          setUserDetails(response.data.user);
+          setToken(response.data.token); // Store token if needed
+          console.log('Login successful:', response.data.message);
+          console.log('User details:', response.data.user);
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        setError("Network error. Please check your connection.");
+        console.error('Network error:', error);
+      });
   };
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
@@ -44,6 +73,20 @@ const SignIn = () => {
   const handleSignUp = () => {
     setSignInOpen(false);
     setSignUpOpen(true);
+  };
+
+  const handleForgotPassword = () => {
+    if (!email) {
+      alert('Please enter your email before proceeding.');
+      return;
+    }else if(!validateEmail(email)){
+      alert('Please enter a valid email address.');
+      return;
+    }else{
+      setSignUpInEmail(email)
+      setSignInOpen(false);
+      setForgotPasswordOpen(true);
+    }
   };
 
   return (
@@ -97,9 +140,9 @@ const SignIn = () => {
           </button>
         </div>
         <div className="flex justify-between items-center mb-6">
-          <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
+          <button onClick={handleForgotPassword} className="text-sm text-blue-500 hover:underline">
             Forgot Password?
-          </Link>
+          </button>
           <button
             onClick={handleSignUp}
             className="text-sm text-blue-500 hover:underline flex items-center"

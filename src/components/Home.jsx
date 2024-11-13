@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef,createContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import SignIn from './Authentication/SignIn';
 import SignUp from './Authentication/SignUp';
-import Navbar from './Navbar';
+import { context } from '../App';
+import Otp from './Authentication/Otp';
+import ForgotPassword from './Authentication/ForgotPassword';
 
 
 
@@ -29,12 +31,10 @@ const restaurants = [
 ];
 
 
-export const context=createContext();
+
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [signInOpen,setSignInOpen]=useState(false)  
-  const [signUpOpen,setSignUpOpen]=useState(false)
-
+  const { signInOpen,signUpOpen ,otpOpen,forgotPasswordOpen} = useContext(context);
 
 
   const menuRef = useRef(null);
@@ -54,11 +54,12 @@ function Home() {
 
   return (
 
-    <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen}}>
-      <Navbar/>
+    < >
       <div> 
         {signInOpen&&<SignIn/>}
         {signUpOpen&&<SignUp/>}
+        {otpOpen&&<Otp/>}
+        {forgotPasswordOpen&&<ForgotPassword/>}
       </div>
     
     <div className="p-4 max-w-screen-lg mx-auto">
@@ -105,7 +106,7 @@ function Home() {
         </div>
       )}
     </div>
-    </context.Provider>
+    </>
     
   );
 }
