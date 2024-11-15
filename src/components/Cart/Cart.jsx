@@ -28,4 +28,5 @@ const Cart = ({ items, onClose, onIncrement, onDecrement, onDelete }) => {
   );
 };
 
+
 export default Cart;
