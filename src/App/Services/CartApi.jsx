@@ -13,6 +13,14 @@ export const CartApi = createApi({
         mode:"cors"
       })
     }),
+    getItems: build.mutation({
+      query: ({token}) => ({
+        url: `getCartDetails`,
+        method: 'POST',
+        headers: {"Authorization":`Bearer ${token}`},
+        mode:"cors"
+      })
+    }),
     del: build.mutation({
         query: (body) => ({
           url: `AddToCart`,
@@ -20,9 +28,9 @@ export const CartApi = createApi({
           body,
           mode:"cors"
         })
-      }),
+    }),
     
-    
+   
 
     
   }),
@@ -30,7 +38,8 @@ export const CartApi = createApi({
 
 // Auto-generated hooks
 export const { 
-  useAddCartMutation
+  useAddCartMutation,
+  useGetItemsMutation
   
 } = CartApi
 
