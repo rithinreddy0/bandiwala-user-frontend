@@ -5,6 +5,7 @@ import SignUp from './Authentication/SignUp';
 import { context } from '../App';
 import Otp from './Authentication/Otp';
 import ForgotPassword from './Authentication/ForgotPassword';
+import { useGetAllVendorsMutation } from '../App/Services/RestaurantApi';
 
 
 
@@ -19,23 +20,15 @@ const foodCategories = [
   { name: 'Khichdi', image: 'https://www.maggi.in/sites/default/files/srh_recipes/f0f349a51947f81de93e374f21372f27.jpg' },
 ];
 
-const restaurants = [
-  { id: 1, name: 'Indian Coffee House',
-       rating: 4.2,
 
-      cuisines: ['South Indian', 'North Indian'],
-       location: 'Khajri Chowk',
-        deliveryTime: '45-50 mins',
-        price: '₹300 for two' },
-  { id: 2, name: 'The Fusion Lounge', rating: 4.0, cuisines: ['North Indian', 'South Indian', 'Chinese'], location: 'Railway Station', deliveryTime: '60-65 mins', price: '₹400 for two' },
-];
 
 
 
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { signInOpen,signUpOpen ,otpOpen,forgotPasswordOpen} = useContext(context);
-
+  const {signInOpen,signUpOpen ,otpOpen,forgotPasswordOpen} = useContext(context);
+  const [getAllVendors]=useGetAllVendorsMutation();
+  const [restaurants,setRestaurants]=useState();
 
   const menuRef = useRef(null);
 
@@ -52,6 +45,12 @@ function Home() {
     };
   }, []);
 
+  useEffect(async() => {
+    await getAllVendors().then((res)=>{
+      console.log(res)
+      setRestaurants(res.data.data)
+    })
+  }, []);
   return (
 
     < >
@@ -76,28 +75,22 @@ function Home() {
         Restaurants with food delivery in <span className='text-primary'> VNR VJIET</span> with ❤️
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {restaurants.map((restaurant) => (
-          <Link key={restaurant.id} to={`/restaurant/${restaurant.id}`} className="border rounded-lg overflow-hidden shadow-sm">
-            <img src="https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/hxxasn2kf8g9eyi9eonq" alt={restaurant.name} className="w-full h-48 object-cover" />
+        {restaurants&&restaurants.map((restaurant) => (
+          <Link key={restaurant._id} to={`/restaurant/${restaurant._id}`} className="border rounded-lg overflow-hidden shadow-sm">
+            <img src={restaurant.logo} alt={restaurant.restaurantName} className="w-full h-48 object-cover" />
             <div className="p-4">
-              <h3 className="text-sm md:text-base font-semibold">{restaurant.name}</h3>
-              <p className="text-xs md:text-sm text-gray-600">{restaurant.cuisines.join(', ')}</p>
+              <h3 className="text-sm md:text-base font-semibold">{restaurant.restaurantName}</h3>
+              <p className="text-xs md:text-sm text-gray-600">{restaurant.cuisineType}</p>
               <div className="flex items-center justify-between text-xs md:text-sm mt-2">
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{restaurant.rating} ★</span>
-                <span>{restaurant.deliveryTime}</span>
-                <span>{restaurant.price}</span>
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{restaurant.averageRating} ★</span>
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{restaurant.address} </span>
+               
               </div>
             </div>
           </Link>
         ))}
       </div>
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        Menu
-      </button>
+      
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div ref={menuRef} className="absolute top-0 left-0 right-0 bg-white shadow-lg p-4">

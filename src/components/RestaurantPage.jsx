@@ -1,20 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useGetVendorDetailsMutation } from '../App/Services/RestaurantApi';
 
-// Mock data
-const restaurants = [
-  { id: 1, name: 'Indian Coffee House', cuisines: ['South Indian', 'North Indian'], rating: 4.2, deliveryTime: '45-50 mins' },
-  { id: 2, name: 'The Fusion Lounge', cuisines: ['North Indian', 'South Indian', 'Chinese'], rating: 4.0, deliveryTime: '60-65 mins' },
-];
 
-const menuItems = [
-  { id: 1, name: 'Hot Coffee', price: 36, rating: 5.0, description: 'A rich and invigorating blend.' },
-  { id: 2, name: 'Paneer Chilli Dosa', price: 216, rating: 4.5, description: 'A fusion dish combining the crispiness of dosa with spicy paneer filling.' },
-];
+
 
 function RestaurantPage() {
   const { id } = useParams();
-  const restaurant = restaurants.find(r => r.id === parseInt(id));
+  const [getVendorDetails]=useGetVendorDetailsMutation()
+  const [vendorDetails,setVendorDetails]=useState()
+  
 
   // State to manage quantity and visibility of controls
   const [cart, setCart] = useState({});
@@ -45,13 +40,18 @@ function RestaurantPage() {
     });
   };
 
-  if (!restaurant) {
-    return <div>Restaurant not found</div>;
-  }
+ 
+  useEffect(async() => {
+      await getVendorDetails({id}).then((res)=>{
+        console.log(res)
+        setVendorDetails(res.data.data)
+      })
+  }, []);
 
+  
   return (
     <div className="p-4 flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-2 text-center">{restaurant.name}</h2>
+      {/*<h2 className="text-2xl font-bold mb-2 text-center">{restaurant.name}</h2>
       <div className="flex items-center mb-6">
         <p className="text-gray-600 mr-4">{restaurant.cuisines.join(', ')}</p>
         <span className="bg-green-100 text-green-800 px-2 py-1 rounded mr-2">{restaurant.rating} ★</span>
@@ -59,7 +59,7 @@ function RestaurantPage() {
       </div>
       <h3 className="text-xl font-semibold mb-4 text-center">Menu</h3>
       <div className="flex flex-col gap-4 w-full max-w-md ">
-        {menuItems.map((item) => (
+        {menuItems&&menuItems.map((item) => (
           <div key={item.id} className="border rounded-lg p-4 flex justify-between items-start">
             <div className="flex flex-col flex-1">
               <h4 className="font-semibold">{item.name}</h4>
@@ -92,7 +92,7 @@ function RestaurantPage() {
             )}
           </div>
         ))}
-      </div>
+      </div>*/}
     </div>
   );
 }
