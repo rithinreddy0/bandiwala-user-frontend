@@ -4,28 +4,33 @@ import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi'
 import { context } from '../App';
 
 export default function CheckoutPage() {
-
   const { token } = useContext(context); // Assuming token is used for API calls
   const [address, setAddress] = useState('');
+  const [mobileNumber, setMobileNumber] = useState(''); // Mobile Number state added here
   const [items, setItems] = useState([]); // Items array will now track quantities and menuItem data
   const [isLoading, setIsLoading] = useState(true); // To track loading state
   const [addCart] = useAddCartMutation(); // Add/update cart mutation
   const [getCart] = useGetCartMutation();
+
   // Calculate subtotal and total amount
   const subtotal = items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
   const deliveryFee = 3.99;
   const total = subtotal + deliveryFee;
 
+  // Handle address change
   const handleAddressChange = (e) => setAddress(e.target.value);
 
+  // Handle mobile number change
+  const handleMobileNumberChange = (e) => setMobileNumber(e.target.value);
+
+  // Handle checkout
   const handleCheckout = () => {
-    if (!address) {
-      alert('Please enter a delivery address');
+    if (!address || !mobileNumber) {
+      alert('Please enter a delivery address and mobile number');
       return;
     }
-    alert(`Order placed! Delivering to: ${address}`);
+    alert(`Order placed! Delivering to: ${address} with Mobile Number: ${mobileNumber}`);
   };
-
 
   // Handle adding item to the cart (with quantity +1)
   const handleAddToCart = async (item) => {
@@ -116,8 +121,10 @@ export default function CheckoutPage() {
       }
     };
 
-    fetchCart();
-  }, [token]);
+    if (token) {
+      fetchCart();
+    }
+  }, [token, getCart]);
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
@@ -136,7 +143,7 @@ export default function CheckoutPage() {
           id="address"
           value={address}
           onChange={handleAddressChange}
-          placeholder={address ? "Edit your address" : "Enter your full address"}
+          placeholder={address ? 'Edit your address' : 'Enter your full address'}
           className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
         

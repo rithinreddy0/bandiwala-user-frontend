@@ -46,7 +46,7 @@ function RestaurantPage() {
         try {
           const response = await getCart({ token }).unwrap();
           const cartData = response.data;
-          setAmount(response.cart.item.totalAmount)
+          setAmount(response.cart.totalAmount)
           console.log("hello",response.cart.totalAmount)
           // Map existing items from the cart to a key-value object with item ID as key and quantity as value
           const updatedCart = {};
