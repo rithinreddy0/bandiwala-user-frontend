@@ -4,6 +4,7 @@ import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi'
 import { context } from '../App';
 
 export default function CheckoutPage() {
+
   const { token } = useContext(context); // Assuming token is used for API calls
   const [address, setAddress] = useState('');
   const [items, setItems] = useState([]); // Items array will now track quantities and menuItem data
@@ -24,6 +25,7 @@ export default function CheckoutPage() {
     }
     alert(`Order placed! Delivering to: ${address}`);
   };
+
 
   // Handle adding item to the cart (with quantity +1)
   const handleAddToCart = async (item) => {
@@ -135,6 +137,19 @@ export default function CheckoutPage() {
           value={address}
           onChange={handleAddressChange}
           placeholder={address ? "Edit your address" : "Enter your full address"}
+          className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+        
+        {/* Mobile Number Field */}
+        <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mt-4">
+          Enter your mobile number:
+        </label>
+        <input
+          id="mobileNumber"
+          type="text"
+          value={mobileNumber}
+          onChange={handleMobileNumberChange}
+          placeholder="Enter your mobile number"
           className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
