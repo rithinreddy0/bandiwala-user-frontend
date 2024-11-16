@@ -46,6 +46,6 @@ export const {
   useGetItemsMutation,
   useDelMutation,
   useGetCartMutation
-} = CartApi
+ } = CartApi
 
 
