@@ -16,7 +16,7 @@ function App() {
   const [otpOpen,setOtpOpen]=useState(false)
   const [signUpInEmail,setSignUpInEmail]=useState(null)
   const [userDetails,setUserDetails]=useState(null)
-  const [token,setToken]=useState('')
+  const [token,setToken]=useState(localStorage.getItem('token'))
   const [forgotPasswordOpen,setForgotPasswordOpen]=useState(false) 
   return (
     <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,otpOpen,setOtpOpen,signUpInEmail,setSignUpInEmail,userDetails,setUserDetails,token,setToken,forgotPasswordOpen,setForgotPasswordOpen}}>

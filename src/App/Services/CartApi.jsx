@@ -5,10 +5,11 @@ export const CartApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'https://bandiwala-backend.onrender.com/api/users/' }),
   endpoints: (build) => ({
     addCart: build.mutation({
-      query: (body) => ({
+      query: ({item,token}) => ({
         url: `AddToCart`,
         method: 'POST',
-        body,
+        body:item,
+        headers: {"Authorization":`Bearer ${token}`},
         mode:"cors"
       })
     }),

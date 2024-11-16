@@ -56,7 +56,9 @@ const SignIn = () => {
         } else {
           setSignInOpen(false);
           setUserDetails(response.data.user);
-          setToken(response.data.token); // Store token if needed
+          localStorage.setItem('token',response.data.token)
+          console.log(response.data.token)
+          // setToken(localStorage.getItem("token")); // Store token if needed
           console.log('Login successful:', response.data.message);
           console.log('User details:', response.data.user);
         }
