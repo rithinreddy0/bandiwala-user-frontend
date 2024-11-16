@@ -7,6 +7,7 @@ import { context } from '../App';
 function RestaurantPage() {
   const { id } = useParams();
   const [getVendorDetails] = useGetVendorDetailsMutation();
+  const [fake,setfake] = useState(0);
   const [addCart] = useAddCartMutation();
   const [getCart] = useGetCartMutation(); // Mutation to get the user's cart details
   const [vendorDetails, setVendorDetails] = useState(null);
@@ -24,6 +25,7 @@ function RestaurantPage() {
         setLoading(true);
         const response = await getVendorDetails({ id }).unwrap();
         setVendorDetails(response.data); // Set the vendor details
+        setfake(!fake);
       } catch (err) {
         console.error('Failed to fetch vendor details:', err);
         setError('Failed to load restaurant details. Please try again.');
@@ -37,7 +39,7 @@ function RestaurantPage() {
     } else {
       setError('Restaurant ID is missing.');
     }
-  }, [id, getVendorDetails]);
+  }, [id, getVendorDetails,]);
   
   // Fetch cart details and merge with vendor menu items
   useEffect(() => {
@@ -81,14 +83,14 @@ function RestaurantPage() {
 
       fetchCart();
     }
-  }, [token, vendorDetails, getCart]);
+  }, [token,fake,vendorDetails, getCart]);
 
   // Handle adding item to the cart (with quantity +1)
   const handleAddToCart = async (item) => {
     if (!token) {
       return alert('Please Login to Continue');
     }
-
+    setfake(!fake);
     const currentQuantity = item.cartQuantity || 0;
     const newQuantity = currentQuantity + 1;
 
@@ -113,7 +115,7 @@ function RestaurantPage() {
     if (!token || newQuantity < 0) {
       return;
     }
-
+    setfake(!fake)
     // Update cart in state
     setVendorDetails(prevDetails => ({
       ...prevDetails,
