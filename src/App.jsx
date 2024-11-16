@@ -1,4 +1,4 @@
-import React, { useState,createContext } from 'react';
+import React, { useState,createContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/Home';
 import RestaurantPage from './components/RestaurantPage';
@@ -18,6 +18,26 @@ function App() {
   const [userDetails,setUserDetails]=useState(null)
   const [token,setToken]=useState(localStorage.getItem('token'))
   const [forgotPasswordOpen,setForgotPasswordOpen]=useState(false) 
+  const verifyfunctio = async()=>{
+    const response = await fetch('https://bandiwala-backend.onrender.com/api/users/verify', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,  // Assuming you're using JWT tokens for auth
+      },
+    });
+    const data = await response.json()
+    // console.log(response)
+    if(!data.success){
+      console.log(data)
+      localStorage.removeItem('token');
+    }  
+  }
+  useEffect( ()=>{
+    if(token){
+      verifyfunctio();
+    }
+  },[])
   return (
     <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,otpOpen,setOtpOpen,signUpInEmail,setSignUpInEmail,userDetails,setUserDetails,token,setToken,forgotPasswordOpen,setForgotPasswordOpen}}>
     <Router >

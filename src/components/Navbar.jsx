@@ -73,7 +73,7 @@ const Navbar = () => {
             <Link to="/cart" className="flex items-center text-lg" onClick={toggleMobileMenu}>
               <ShoppingCart className="w-6 h-6 mr-2" /> Cart
             </Link>
-            {token&&token ? (
+            {!token ? (
               <>
                 <button onClick={() => {setSignInOpen(!signInOpen)}} className="flex items-center text-lg">
                   <User className="w-6 h-6 mr-2" /> Sign In

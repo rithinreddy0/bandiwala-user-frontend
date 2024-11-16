@@ -58,7 +58,7 @@ const SignIn = () => {
           setUserDetails(response.data.user);
           localStorage.setItem('token',response.data.token)
           console.log(response.data.token)
-          // setToken(localStorage.getItem("token")); // Store token if needed
+          setToken(localStorage.getItem("token")); 
           console.log('Login successful:', response.data.message);
           console.log('User details:', response.data.user);
         }
