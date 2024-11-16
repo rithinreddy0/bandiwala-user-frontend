@@ -49,6 +49,7 @@ function App() {
         <Route path="/" element={<Home/>} />
         <Route path="/restaurant/:id" element={<RestaurantPage />} />
         <Route path="/cart" element={<Cart/>}/>
+       
       </Routes> 
     </Router>
     </context.Provider>

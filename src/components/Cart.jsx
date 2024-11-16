@@ -1,63 +1,121 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { ShoppingCart, MapPin } from 'lucide-react' // Import Lucide icons for use
-
-// Mock API function (replace with actual API call)
-const fetchOrderItems = async () => {
-  // Simulating API delay
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  return [
-    { id: 1, name: 'Pizza Margherita', price: 12.99, quantity: 2 },
-    { id: 2, name: 'Caesar Salad', price: 8.99, quantity: 1 },
-    { id: 3, name: 'Garlic Bread', price: 4.99, quantity: 1 },
-  ]
-}
+import React, { useState, useEffect, useContext } from 'react';
+import { ShoppingCart, MapPin, Trash } from 'lucide-react'; // Import Lucide icons for use
+import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi'; // API mutation for adding/updating cart
+import { context } from '../App';
 
 export default function CheckoutPage() {
-  const [address, setAddress] = useState('')
-  const [items, setItems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { token } = useContext(context); // Assuming token is used for API calls
+  const [address, setAddress] = useState('');
+  const [items, setItems] = useState([]); // Items array will now track quantities and menuItem data
+  const [isLoading, setIsLoading] = useState(true); // To track loading state
+  const [addCart] = useAddCartMutation(); // Add/update cart mutation
+  const [getCart] = useGetCartMutation();
+  // Calculate subtotal and total amount
+  const subtotal = items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+  const deliveryFee = 3.99;
+  const total = subtotal + deliveryFee;
 
-  useEffect(() => {
-    fetchOrderItems().then(data => {
-      setItems(data)
-      setIsLoading(false)
-    })
-  }, [])
-
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const deliveryFee = 3.99
-  const total = subtotal + deliveryFee
-
-  const handleAddressChange = (e) => setAddress(e.target.value)
+  const handleAddressChange = (e) => setAddress(e.target.value);
 
   const handleCheckout = () => {
     if (!address) {
-      alert('Please enter a delivery address')
-      return
+      alert('Please enter a delivery address');
+      return;
     }
-    // Implement checkout logic here
-    alert(`Order placed! Delivering to: ${address}`)
-  }
+    alert(`Order placed! Delivering to: ${address}`);
+  };
 
-  const handleIncrement = (id) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    )
-  }
+  // Handle adding item to the cart (with quantity +1)
+  const handleAddToCart = async (item) => {
+    if (!token) {
+      return alert('Please Login to Continue');
+    }
 
-  const handleDecrement = (id) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
+    const currentQuantity = item.quantity || 0;
+    const newQuantity = currentQuantity + 1;
+
+    // Update the cart in the state
+    setItems((prevItems) =>
+      prevItems.map((cartItem) =>
+        cartItem._id === item._id ? { ...cartItem, quantity: newQuantity } : cartItem
       )
-    )
-  }
+    );
+
+    try {
+      await addCart({
+        item: { menuItemId: item.menuItem._id, quantity: newQuantity },
+        token,
+      }).unwrap();
+      console.log('Item added to cart successfully');
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
+  };
+
+  // Handle decrementing item in the cart (with quantity -1)
+  const handleDecrement = async (item) => {
+    const currentQuantity = item.quantity || 0;
+
+    if (currentQuantity <= 1) {
+      // If quantity is 1 or less, remove the item from the cart
+      handleRemoveItem(item);
+    } else {
+      const newQuantity = currentQuantity - 1;
+
+      // Update the cart in the state
+      setItems((prevItems) =>
+        prevItems.map((cartItem) =>
+          cartItem._id === item._id ? { ...cartItem, quantity: newQuantity } : cartItem
+        )
+      );
+
+      try {
+        await addCart({
+          item: { menuItemId: item.menuItem._id, quantity: newQuantity },
+          token,
+        }).unwrap();
+        console.log('Item quantity updated in cart');
+      } catch (error) {
+        console.error('Error updating item quantity:', error);
+      }
+    }
+  };
+
+  // Handle removing an item completely from the cart (set quantity to 0)
+  const handleRemoveItem = async (item) => {
+    try {
+      // API call to remove item from cart (set quantity to 0)
+      await addCart({
+        item: { menuItemId: item.menuItem._id, quantity: 0 },
+        token,
+      }).unwrap();
+
+      // Remove item from state
+      setItems((prevItems) => prevItems.filter((cartItem) => cartItem._id !== item._id));
+
+      console.log('Item removed from cart');
+    } catch (error) {
+      console.error('Error removing item:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch cart details when the page loads
+    const fetchCart = async () => {
+      try {
+        const response = await getCart({ token }); // Your getCart API to fetch cart items
+        if (response?.data?.cart?.items) {
+          setItems(response.data.cart.items);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [token]);
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
@@ -87,21 +145,25 @@ export default function CheckoutPage() {
           <ShoppingCart className="w-6 h-6 text-gray-700" />
           <h3 className="text-xl font-semibold text-gray-800">Order Summary</h3>
         </div>
+
+        {/* Conditional rendering if no items in the cart */}
         {isLoading ? (
           <p>Loading order items...</p>
+        ) : items.length === 0 ? (
+          <p className="text-center text-gray-500">No items in the cart</p> // No items message
         ) : (
           <ul className="space-y-4">
-            {items.map(item => (
-              <li key={item.id} className="flex justify-between items-center text-sm text-gray-700">
+            {items.map((item) => (
+              <li key={item._id} className="flex justify-between items-center text-sm text-gray-700">
                 <div className="flex-1 flex justify-between">
-                  <span>{item.name} x{item.quantity}</span>
-                  {/* Move Item Total to the right and make it bolder */}
-                  <span className="font-bold text-lg">{`₹${(item.price * item.quantity).toFixed(2)}`}</span>
+                  <span>{item.menuItem.name} x{item.quantity}</span>
+                  {/* Item Total */}
+                  <span className="font-bold text-lg">{`₹${(item.menuItem.price * item.quantity).toFixed(2)}`}</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   {/* Decrement Button */}
                   <button
-                    onClick={() => handleDecrement(item.id)}
+                    onClick={() => handleDecrement(item)}
                     className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={item.quantity <= 1}
                   >
@@ -111,16 +173,25 @@ export default function CheckoutPage() {
                   <span className="text-lg font-medium">{item.quantity}</span>
                   {/* Increment Button */}
                   <button
-                    onClick={() => handleIncrement(item.id)}
+                    onClick={() => handleAddToCart(item)}
                     className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     +
                   </button>
                 </div>
+
+                {/* Remove (Trash Icon) Button */}
+                <button
+                  onClick={() => handleRemoveItem(item)}
+                  className="ml-4 text-red-600 hover:text-red-800 text-sm"
+                >
+                  <Trash className="w-5 h-5" />
+                </button>
               </li>
             ))}
           </ul>
         )}
+
         <div className="mt-4 space-y-2">
           <div className="flex justify-between text-sm text-gray-700">
             <span>Subtotal:</span>
@@ -147,8 +218,7 @@ export default function CheckoutPage() {
             Place Order
           </button>
         </div>
-        
       </div>
     </div>
-  )
+  );
 }
