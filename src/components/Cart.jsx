@@ -16,6 +16,7 @@ const fetchOrderItems = async () => {
 
 export default function CheckoutPage() {
   const [address, setAddress] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('') // Mobile number state
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -31,14 +32,15 @@ export default function CheckoutPage() {
   const total = subtotal + deliveryFee
 
   const handleAddressChange = (e) => setAddress(e.target.value)
+  const handleMobileNumberChange = (e) => setMobileNumber(e.target.value)
 
   const handleCheckout = () => {
-    if (!address) {
-      alert('Please enter a delivery address')
+    if (!address || !mobileNumber) {
+      alert('Please enter both delivery address and mobile number')
       return
     }
     // Implement checkout logic here
-    alert(`Order placed! Delivering to: ${address}`)
+    alert(`Order placed! Delivering to: ${address}, Mobile: ${mobileNumber}`)
   }
 
   const handleIncrement = (id) => {
@@ -77,6 +79,19 @@ export default function CheckoutPage() {
           value={address}
           onChange={handleAddressChange}
           placeholder={address ? "Edit your address" : "Enter your full address"}
+          className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+        
+        {/* Mobile Number Field */}
+        <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mt-4">
+          Enter your mobile number:
+        </label>
+        <input
+          id="mobileNumber"
+          type="text"
+          value={mobileNumber}
+          onChange={handleMobileNumberChange}
+          placeholder="Enter your mobile number"
           className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
