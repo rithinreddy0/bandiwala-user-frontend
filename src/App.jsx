@@ -4,8 +4,9 @@ import Home from './components/Home';
 import RestaurantPage from './components/RestaurantPage';
 import Otp from './components/Authentication/Otp';
 import Navbar from './components/Navbar';
-import Cart from './components/Cart/Cart';
+// import Cart from './components/Cart/Cart';
 import ForgotPassword from './components/Authentication/ForgotPassword';
+import Cart from './components/Cart';
 
 
 
@@ -47,7 +48,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/restaurant/:id" element={<RestaurantPage />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<Cart/>}/>
       </Routes> 
     </Router>
     </context.Provider>
