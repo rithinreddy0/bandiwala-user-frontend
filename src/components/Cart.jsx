@@ -2,21 +2,27 @@ import React, { useState, useEffect, useContext } from 'react';
 import { ShoppingCart, MapPin, Trash } from 'lucide-react'; // Import Lucide icons for use
 import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi'; // API mutation for adding/updating cart
 import { context } from '../App';
+import { useCreateorderMutation,useGetmobileMutation } from '../App/Services/CartApi';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
+  const [createOrder] = useCreateorderMutation();
+  const [getmobile] = useGetmobileMutation();
+  const [addCart] = useAddCartMutation(); // Add/update cart mutation
+  const [getCart] = useGetCartMutation();
+
+    const navigate = useNavigate();
+
   const { token } = useContext(context); // Assuming token is used for API calls
   const [address, setAddress] = useState('');
   const [mobileNumber, setMobileNumber] = useState(''); // Mobile Number state added here
-  const [items, setItems] = useState([]); // Items array will now track quantities and menuItem data
+  const [items, setItems]  = useState([]); // Items array will now track quantities and menuItem data
   const [isLoading, setIsLoading] = useState(true); // To track loading state
-  const [addCart] = useAddCartMutation(); // Add/update cart mutation
-  const [getCart] = useGetCartMutation();
 
   // Calculate subtotal and total amount
   const subtotal = items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
   const deliveryFee = 3.99;
   const total = subtotal + deliveryFee;
-
   // Handle address change
   const handleAddressChange = (e) => setAddress(e.target.value);
 
@@ -24,12 +30,25 @@ export default function CheckoutPage() {
   const handleMobileNumberChange = (e) => setMobileNumber(e.target.value);
 
   // Handle checkout
-  const handleCheckout = () => {
+  const handleCheckout = async() => {
     if (!address || !mobileNumber) {
       alert('Please enter a delivery address and mobile number');
+      
       return;
     }
-    alert(`Order placed! Delivering to: ${address} with Mobile Number: ${mobileNumber}`);
+    const orderDetails = {
+      deliveryAddress: address,
+      mobileNo: mobileNumber,
+    };
+    
+    // The token is passed separately.
+
+    const response = await createOrder({ item: orderDetails, token });
+    console.log(response.data.order._id)
+    if(!response.error){
+      alert('Order created successfully');
+      navigate(`/order/${response.data.order._id}`)
+    }
   };
 
   // Handle adding item to the cart (with quantity +1)
@@ -75,7 +94,7 @@ export default function CheckoutPage() {
           cartItem._id === item._id ? { ...cartItem, quantity: newQuantity } : cartItem
         )
       );
-
+      // console.log(token)
       try {
         await addCart({
           item: { menuItemId: item.menuItem._id, quantity: newQuantity },
@@ -110,6 +129,11 @@ export default function CheckoutPage() {
     // Fetch cart details when the page loads
     const fetchCart = async () => {
       try {
+        const response2 = await getmobile({token});
+
+        setMobileNumber(response2.data.data.mobileNo);
+        setAddress(response2.data.data.deliveryAddress)
+        
         const response = await getCart({ token }); // Your getCart API to fetch cart items
         if (response?.data?.cart?.items) {
           setItems(response.data.cart.items);
