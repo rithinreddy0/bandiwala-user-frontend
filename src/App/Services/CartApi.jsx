@@ -73,15 +73,11 @@ export const {
   useAddCartMutation,
   useGetItemsMutation,
   useDelMutation,
-<<<<<<< HEAD
-  useGetCartMutation
- } = CartApi
-=======
   useGetCartMutation,
   useCreateorderMutation,
   useGetmobileMutation,
   useGetOrderMutation
 } = CartApi
->>>>>>> a08afe28bb80d7238a2eb16977044e2a7c1ae8ac
+
 
 
