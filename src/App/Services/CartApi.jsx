@@ -36,8 +36,36 @@ export const CartApi = createApi({
         headers: {"Authorization":`Bearer ${token}`},
         mode:"cors"
       })
-    })
+    }),
+    createorder: build.mutation({
+      query:({item,token})=>({
+        url:`createOrder`,
+        method: 'POST',
+        body:item,
+        headers: {"Authorization":`Bearer ${token}`},
+        mode:"cors"
+      })
+    }),
+    getmobile: build.mutation({
+      query:({token})=>({
+        url:`getdeliverydeatils`,
+        method: 'POST',
+        headers: {"Authorization":`Bearer ${token}`},
+        mode:"cors"
+      })
+    }),
+    getOrder: build.mutation({
+      query:({orderId,token})=>({
+        url:`getOrderDetails`,
+        method: 'POST',
+        body:{orderId},
+        headers: {"Authorization":`Bearer ${token}`},
+        mode:"cors"
+      })
+    }),
+   
   }),
+  
 })
 
 // Auto-generated hooks
@@ -45,7 +73,15 @@ export const {
   useAddCartMutation,
   useGetItemsMutation,
   useDelMutation,
+<<<<<<< HEAD
   useGetCartMutation
  } = CartApi
+=======
+  useGetCartMutation,
+  useCreateorderMutation,
+  useGetmobileMutation,
+  useGetOrderMutation
+} = CartApi
+>>>>>>> a08afe28bb80d7238a2eb16977044e2a7c1ae8ac
 
 

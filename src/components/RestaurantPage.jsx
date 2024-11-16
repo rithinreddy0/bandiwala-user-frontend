@@ -3,29 +3,31 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGetVendorDetailsMutation } from '../App/Services/RestaurantApi';
 import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi';
 import { context } from '../App';
+import { Trash2 } from 'lucide-react';
 
 function RestaurantPage() {
   const { id } = useParams();
   const [getVendorDetails] = useGetVendorDetailsMutation();
-  const [fake,setfake] = useState(0);
   const [addCart] = useAddCartMutation();
-  const [getCart] = useGetCartMutation(); // Mutation to get the user's cart details
+  const [getCart] = useGetCartMutation();
+
   const [vendorDetails, setVendorDetails] = useState(null);
-  const [cart, setCart] = useState({}); // State to track cart items and their quantities
+  const [cart, setCart] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalAmount, setTotalAmount] = useState(0); // To store the total cart amount
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [isCartFetched, setIsCartFetched] = useState(false);
+
   const navigate = useNavigate();
   const { token } = useContext(context);
-  const [amount,setAmount ]  = useState(0);
+
   // Fetch vendor details
   useEffect(() => {
     const fetchVendorDetails = async () => {
       try {
         setLoading(true);
         const response = await getVendorDetails({ id }).unwrap();
-        setVendorDetails(response.data); // Set the vendor details
-        setfake(!fake);
+        setVendorDetails(response.data);
       } catch (err) {
         console.error('Failed to fetch vendor details:', err);
         setError('Failed to load restaurant details. Please try again.');
@@ -39,72 +41,70 @@ function RestaurantPage() {
     } else {
       setError('Restaurant ID is missing.');
     }
-  }, [id, getVendorDetails,]);
-  
-  // Fetch cart details and merge with vendor menu items
+  }, [id, getVendorDetails]);
+
+  // Fetch cart details once
   useEffect(() => {
-    if (token && vendorDetails) {
-      const fetchCart = async () => {
-        try {
-          const response = await getCart({ token }).unwrap();
-          const cartData = response.data;
-          setAmount(response.cart.totalAmount)
-          console.log("hello",response.cart.totalAmount)
-          // Map existing items from the cart to a key-value object with item ID as key and quantity as value
-          const updatedCart = {};
-          cartData.items.forEach(item => {
-            updatedCart[item.menuItem._id] = item.quantity;
-          });
+    const fetchCart = async () => {
+      if (!token || !vendorDetails || isCartFetched) return;
 
-          // Merge cart quantities with vendor items
-          const updatedMenuItems = vendorDetails.menuItems.map(item => {
-            return {
-              ...item,
-              cartQuantity: updatedCart[item._id] || 0, // Merge cart quantity if item is present in the cart
-            };
-          });
+      try {
+        const response = await getCart({ token }).unwrap();
+        const cartData = response.cart;
 
-          setVendorDetails(prevDetails => ({
-            ...prevDetails,
-            menuItems: updatedMenuItems,
-          }));
+        const cartItemsMap = {};
+        cartData.items.forEach(item => {
+          cartItemsMap[item.menuItem._id] = item.quantity;
+        });
 
-          // Calculate the total amount for the cart
-          const total = cartData.items.reduce((acc, item) => {
-            const itemPrice = item.menuItem.price;
-            const itemQuantity = item.quantity;
-            return acc + itemPrice * itemQuantity;
-          }, 0);
-          setTotalAmount(total); // Update the total amount state
-        } catch (error) {
-          console.error('Error fetching cart:', error);
-        }
-      };
+        const updatedMenuItems = vendorDetails.menuItems.map(item => ({
+          ...item,
+          cartQuantity: cartItemsMap[item._id] || 0,
+        }));
 
-      fetchCart();
-    }
-  }, [token,fake,vendorDetails, getCart]);
+        setVendorDetails(prevDetails => ({
+          ...prevDetails,
+          menuItems: updatedMenuItems,
+        }));
 
-  // Handle adding item to the cart (with quantity +1)
+        setTotalAmount(cartData.totalAmount);
+        setIsCartFetched(true);
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      }
+    };
+
+    fetchCart();
+  }, [token, vendorDetails, getCart, isCartFetched]);
+
+  // Update total amount
+  const calculateTotalAmount = (menuItems) => {
+    const total = menuItems.reduce((sum, item) => sum + item.cartQuantity * item.price, 0);
+    setTotalAmount(total);
+  };
+
+  // Handle adding item to the cart
   const handleAddToCart = async (item) => {
     if (!token) {
       return alert('Please Login to Continue');
     }
-    setfake(!fake);
+
     const currentQuantity = item.cartQuantity || 0;
     const newQuantity = currentQuantity + 1;
 
-    // Update cart in state
+    const updatedMenuItems = vendorDetails.menuItems.map(menuItem =>
+      menuItem._id === item._id ? { ...menuItem, cartQuantity: newQuantity } : menuItem
+    );
+
     setVendorDetails(prevDetails => ({
       ...prevDetails,
-      menuItems: prevDetails.menuItems.map(menuItem =>
-        menuItem._id === item._id ? { ...menuItem, cartQuantity: newQuantity } : menuItem
-      ),
+      menuItems: updatedMenuItems,
     }));
+
+    calculateTotalAmount(updatedMenuItems);
 
     try {
       await addCart({ item: { menuItemId: item._id, quantity: newQuantity }, token }).unwrap();
-      console.log('Item added to cart successfully');
     } catch (error) {
       console.error('Error adding item to cart:', error);
     }
@@ -115,45 +115,49 @@ function RestaurantPage() {
     if (!token || newQuantity < 0) {
       return;
     }
-    setfake(!fake)
-    // Update cart in state
+
+    const updatedMenuItems = vendorDetails.menuItems.map(menuItem =>
+      menuItem._id === item._id ? { ...menuItem, cartQuantity: newQuantity } : menuItem
+    );
+
     setVendorDetails(prevDetails => ({
       ...prevDetails,
-      menuItems: prevDetails.menuItems.map(menuItem =>
-        menuItem._id === item._id ? { ...menuItem, cartQuantity: newQuantity } : menuItem
-      ),
+      menuItems: updatedMenuItems,
     }));
+
+    calculateTotalAmount(updatedMenuItems);
 
     try {
       await addCart({ item: { menuItemId: item._id, quantity: newQuantity }, token }).unwrap();
-      console.log('Item quantity updated in cart');
     } catch (error) {
       console.error('Error updating item quantity:', error);
     }
   };
 
-  // Handle removing an item completely from the cart
+  // Handle removing an item from the cart
   const handleRemoveItem = async (item) => {
     try {
       await addCart({ item: { menuItemId: item._id, quantity: 0 }, token }).unwrap();
+
+      const updatedMenuItems = vendorDetails.menuItems.map(menuItem =>
+        menuItem._id === item._id ? { ...menuItem, cartQuantity: 0 } : menuItem
+      );
+
       setVendorDetails(prevDetails => ({
         ...prevDetails,
-        menuItems: prevDetails.menuItems.map(menuItem =>
-          menuItem._id === item._id ? { ...menuItem, cartQuantity: 0 } : menuItem
-        ),
+        menuItems: updatedMenuItems,
       }));
-      console.log('Item removed from cart');
+
+      calculateTotalAmount(updatedMenuItems);
     } catch (error) {
       console.error('Error removing item:', error);
     }
   };
 
-  // If no id is passed, navigate away
   if (!id) {
     navigate('/');
   }
 
-  // Show loading or error message if applicable
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -170,19 +174,16 @@ function RestaurantPage() {
       <div className="flex flex-col gap-4 w-full max-w-md">
         {vendorDetails.menuItems?.map((item) => (
           <div key={item._id} className="border rounded-lg p-4 flex items-center gap-4">
-            {/* Menu Item Image */}
             <img
               src={item.image}
               alt={item.name}
               className="w-24 h-24 object-cover rounded-lg"
             />
-            {/* Menu Item Details */}
             <div className="flex flex-col flex-1">
               <h4 className="font-semibold">{item.name}</h4>
               <p className="text-sm text-gray-600 mt-1">{item.description}</p>
               <span className="mt-2 font-bold">₹{item.price}</span>
             </div>
-            {/* Add to Cart / Quantity Controls */}
             <div className="flex items-center ml-auto">
               {item.cartQuantity > 0 ? (
                 <>
@@ -209,7 +210,7 @@ function RestaurantPage() {
                     className="bg-red-700 text-white px-2 py-1 rounded ml-2"
                     onClick={() => handleRemoveItem(item)}
                   >
-                    Remove
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </>
               ) : (
@@ -224,17 +225,17 @@ function RestaurantPage() {
           </div>
         ))}
       </div>
-
-      {/* Sticky Cart Total and Go to Cart Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-green-500 p-4 flex justify-between items-center text-white">
-        <div className="text-lg font-bold">Total: ₹{amount}</div>
-        <button
-          className="bg-white text-green-500 px-6 py-2 rounded-lg"
-          onClick={() => navigate('/cart')} // Redirect to the Cart page
-        >
-          Go to Cart
-        </button>
-      </div>
+      {totalAmount > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-secondary p-3 flex justify-between items-center text-white">
+          <div className="text-lg font-bold ml-10">Total: ₹{totalAmount}</div>
+          <button
+            className="bg-white text-black px-6 py-2 rounded-lg bg-yellow"
+            onClick={() => navigate('/cart')}
+          >
+            Go to Cart
+          </button>
+        </div>
+      )}
     </div>
   );
 }

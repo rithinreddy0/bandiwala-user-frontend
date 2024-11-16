@@ -6,6 +6,7 @@ import Otp from './components/Authentication/Otp';
 import Navbar from './components/Navbar';
 import Cart from './components/Cart';
 import Profile from './components/Profile/Profile';
+import UserOrderTracking from './components/Profile/Tracker';
 
 
 
@@ -49,7 +50,7 @@ function App() {
         <Route path="/restaurant/:id" element={<RestaurantPage />} />
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/cart" element={<Cart/>}/>
-       
+        <Route path="/order/:id" element={<UserOrderTracking/>}/>
       </Routes> 
     </Router>
     </context.Provider>
