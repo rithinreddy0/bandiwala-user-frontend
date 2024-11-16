@@ -28,16 +28,18 @@ function App() {
     });
     const data = await response.json()
     // console.log(response)
-    if(!data.success){
+    console.log(data)
+    console.log(response)
+    if(!response.ok){
       console.log(data)
       localStorage.removeItem('token');
-    }  
+    }
   }
   useEffect( ()=>{
-    if(token){
+    
       verifyfunctio();
-    }
-  },[])
+    
+  },[])
   return (
     <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,otpOpen,setOtpOpen,signUpInEmail,setSignUpInEmail,userDetails,setUserDetails,token,setToken,forgotPasswordOpen,setForgotPasswordOpen}}>
     <Router >
