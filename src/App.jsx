@@ -16,7 +16,7 @@ function App() {
   const [otpOpen,setOtpOpen]=useState(false)
   const [signUpInEmail,setSignUpInEmail]=useState(null)
   const [userDetails,setUserDetails]=useState(null)
-  const [token,setToken]=useState('dd')
+  const [token,setToken]=useState('')
   const [forgotPasswordOpen,setForgotPasswordOpen]=useState(false) 
   return (
     <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,otpOpen,setOtpOpen,signUpInEmail,setSignUpInEmail,userDetails,setUserDetails,token,setToken,forgotPasswordOpen,setForgotPasswordOpen}}>
@@ -26,8 +26,7 @@ function App() {
         <Route path="/" element={<Home/>} />
         <Route path="/restaurant/:id" element={<RestaurantPage />} />
         <Route path="/cart" element={<Cart />} />
-      </Routes>
-      
+      </Routes> 
     </Router>
     </context.Provider>
     
