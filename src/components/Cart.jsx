@@ -38,6 +38,7 @@ export default function CheckoutPage() {
 
   // Handle checkout
   const handleCheckout = async () => {
+    setItems([]);
     if (!address || !mobileNumber) {
       toast.error('Please enter a delivery address and mobile number');
       return;
