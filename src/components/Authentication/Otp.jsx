@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import OtpInput from 'react-otp-input';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { context } from '../../App';
 import { useOtpVerifyMutation, useSignUpMutation } from '../../App/Services/AuthenticationApi';
 
@@ -7,20 +9,15 @@ const Otp = () => {
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
 
   const [otpVerify] = useOtpVerifyMutation();
   const [signUp] = useSignUpMutation();
   const {
-    signInOpen,
     setSignInOpen,
-    signUpOpen,
     setSignUpOpen,
-    otpOpen,
     setOtpOpen,
     signUpInEmail,
-    setSignUpInEmail,
   } = useContext(context);
 
   // Timer for resend button
@@ -31,28 +28,26 @@ const Otp = () => {
     }
   }, [resendTimer]);
 
-  const handleChange = (otp) => {
-    setOtp(otp);
-    if (error) setError(''); // Clear error when OTP changes
-  };
+  const handleChange = (otp) => setOtp(otp);
 
   const handleVerify = async () => {
     if (otp.length < 4) {
-      setError('Please enter a 4-digit OTP.');
+      toast.error('Please enter a valid 4-digit OTP.');
       return;
     }
+
     setIsVerifying(true);
     try {
       const res = await otpVerify({ email: signUpInEmail, otp: Number(otp) });
       if (res.error) {
-        setError(res.error.data?.message || 'OTP verification failed. Please check the OTP and try again.');
+        toast.error(res.error.data?.message || 'OTP verification failed. Please try again.');
       } else {
-        alert('OTP verification successful! Please sign in to your account.');
+        toast.success('OTP verification successful! Please sign in.');
         setOtpOpen(false);
         setSignInOpen(true);
       }
     } catch {
-      setError('Server error. Please try again later.');
+      toast.error('Server error. Please try again later.');
     } finally {
       setIsVerifying(false);
     }
@@ -63,12 +58,13 @@ const Otp = () => {
     try {
       const res = await signUp({ email: signUpInEmail });
       if (res.error) {
-        setError(res.error.data?.message || 'Failed to resend OTP. Please try again.');
+        toast.error(res.error.data?.message || 'Failed to resend OTP. Please try again.');
       } else {
-        setResendTimer(60); // Reset the timer on resend
+        toast.success('OTP resent successfully!');
+        setResendTimer(60); // Reset the timer
       }
     } catch {
-      setError('Server error. Please try again later.');
+      toast.error('Server error. Please try again later.');
     } finally {
       setIsResending(false);
     }
@@ -107,7 +103,6 @@ const Otp = () => {
             }}
           />
         </div>
-        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
         <button
           onClick={handleVerify}
           disabled={isVerifying}
@@ -135,6 +130,7 @@ const Otp = () => {
           Back to Sign Up
         </button>
       </div>
+      <ToastContainer />
     </div>
   );
 };

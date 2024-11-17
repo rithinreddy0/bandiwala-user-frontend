@@ -2,30 +2,51 @@ import { LogOut, Mail, MapPin, Phone } from "lucide-react";
 import { context } from "../../App";
 import { useContext, useEffect, useState } from "react";
 import { useGetmobileMutation, useGetAllOrdersMutation } from "../../App/Services/CartApi";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { token, setToken } = useContext(context);
   const [getmobile] = useGetmobileMutation();
   const [getAllOrders] = useGetAllOrdersMutation();
   const [userProfile, setUserProfile] = useState({});
-  const [orders, setOrders] = useState([]); // Initialize as an empty array
+  const [orders, setOrders] = useState([]);
+
+  // Handle navigation to the order details page
+  const handle = (orderID) => {
+    navigate(`/order/${orderID}`);
+  };
 
   useEffect(() => {
     const fetchProfileAndOrders = async () => {
-      if (!token) return; // Restrict API calls if token is null
-      try {
-        const response2 = await getAllOrders({ token });
-        const response = await getmobile({ token });
+      if (!token) {
+        console.warn("No token available.");
+        return;
+      }
 
-        if (response?.data?.data) setUserProfile(response.data.data);
-        if (response2?.data?.data) setOrders(response2.data.data); // Ensure valid data before setting state
-        console.log(response2.data.data)
+      try {
+        // Fetch User Profile
+        const response = await getmobile({ token });
+        if (response?.data?.data) {
+          setUserProfile(response.data.data);
+        } else {
+          console.warn("User profile data is invalid:", response?.data);
+        }
+
+        // Fetch Orders
+        const response2 = await getAllOrders({ token });
+        if (Array.isArray(response2?.data.orders)) {
+          setOrders(response2.data.orders);
+        } else {
+          console.error("Orders data is invalid:", response2?.data?.data);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
+
     fetchProfileAndOrders();
-  }, [token]);
+  }, [token, getmobile, getAllOrders]);
 
   // Separate orders by status
   const deliveringOrders = orders?.filter((order) => order.status === "Order Placed") || [];
@@ -34,7 +55,7 @@ export default function Profile() {
   const handleLogout = () => {
     setToken(null);
     localStorage.removeItem("token");
-    alert("Logged Out Successfully");
+    navigate("/");
   };
 
   return (
@@ -75,7 +96,7 @@ export default function Profile() {
             <h4 className="text-md sm:text-lg font-semibold text-orange-600 mb-2">Now Delivering</h4>
             <div className="space-y-4">
               {deliveringOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order._id} order={order} handle={handle} />
               ))}
             </div>
           </>
@@ -87,7 +108,7 @@ export default function Profile() {
             <h4 className="text-md sm:text-lg font-semibold text-gray-700 mt-6 mb-2">Delivered</h4>
             <div className="space-y-4">
               {deliveredOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order._id} order={order} handle={handle} />
               ))}
             </div>
           </>
@@ -97,16 +118,14 @@ export default function Profile() {
   );
 }
 
-
-
-function OrderCard({ order }) {
+function OrderCard({ order, handle }) {
   return (
     <div className="border rounded-lg overflow-hidden shadow-md bg-white">
       {/* Image Section */}
       <div className="relative sm:w-32 sm:flex-shrink-0">
         <img
           src={order.vendorId.logo || "/placeholder.svg"}
-          alt={order.restaurant}
+          alt={order.vendorId.restaurantName}
           className="w-full h-36 sm:w-32 sm:h-32 object-cover rounded-md"
         />
       </div>
@@ -135,8 +154,11 @@ function OrderCard({ order }) {
           <span className="text-sm font-medium text-gray-600 mt-2">
             Status: <span className="text-orange-500">{order.status}</span>
           </span>
-          <button className="mt-3 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-300">
-            {order.status === "Order Placed" ? "Track" : "Reorder"}
+          <button 
+            onClick={() => handle(order._id)}
+            className="mt-3 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-300"
+          >
+            {order.status === "Order Placed" ? "More Details" : "Reorder"}
           </button>
         </div>
       </div>

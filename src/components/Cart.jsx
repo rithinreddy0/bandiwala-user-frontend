@@ -2,27 +2,34 @@ import React, { useState, useEffect, useContext } from 'react';
 import { ShoppingCart, MapPin, Trash } from 'lucide-react'; // Import Lucide icons for use
 import { useAddCartMutation, useGetCartMutation } from '../App/Services/CartApi'; // API mutation for adding/updating cart
 import { context } from '../App';
-import { useCreateorderMutation,useGetmobileMutation } from '../App/Services/CartApi';
+import { useCreateorderMutation, useGetmobileMutation } from '../App/Services/CartApi';
 import { Navigate, useNavigate } from 'react-router-dom';
-
+import SignIn from './Authentication/SignIn';
+import SignUp from './Authentication/SignUp';
+import Otp from './Authentication/Otp';
+import ForgotPassword from './Authentication/ForgotPassword'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function CheckoutPage() {
+  const { signInOpen, signUpOpen, otpOpen, forgotPasswordOpen } = useContext(context);
   const [createOrder] = useCreateorderMutation();
   const [getmobile] = useGetmobileMutation();
   const [addCart] = useAddCartMutation(); // Add/update cart mutation
   const [getCart] = useGetCartMutation();
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const { token } = useContext(context); // Assuming token is used for API calls
   const [address, setAddress] = useState('');
   const [mobileNumber, setMobileNumber] = useState(''); // Mobile Number state added here
-  const [items, setItems]  = useState([]); // Items array will now track quantities and menuItem data
+  const [items, setItems] = useState([]); // Items array will now track quantities and menuItem data
   const [isLoading, setIsLoading] = useState(true); // To track loading state
 
   // Calculate subtotal and total amount
   const subtotal = items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
   const deliveryFee = 3.99;
   const total = subtotal + deliveryFee;
+
   // Handle address change
   const handleAddressChange = (e) => setAddress(e.target.value);
 
@@ -30,24 +37,22 @@ export default function CheckoutPage() {
   const handleMobileNumberChange = (e) => setMobileNumber(e.target.value);
 
   // Handle checkout
-  const handleCheckout = async() => {
+  const handleCheckout = async () => {
     if (!address || !mobileNumber) {
-      alert('Please enter a delivery address and mobile number');
-      
+      toast.error('Please enter a delivery address and mobile number');
       return;
     }
     const orderDetails = {
       deliveryAddress: address,
       mobileNo: mobileNumber,
     };
-    
-    // The token is passed separately.
 
+    // The token is passed separately.
     const response = await createOrder({ item: orderDetails, token });
-    console.log(response.data.order._id)
-    if(!response.error){
-      alert('Order created successfully');
-      navigate(`/order/${response.data.order._id}`)
+    // console.log(response.data.order._id);
+    if (!response.error) {
+      toast.success("Order Placed Successfully");
+      navigate(`/order/${response.data.order._id}`);
     }
   };
 
@@ -129,11 +134,11 @@ export default function CheckoutPage() {
     // Fetch cart details when the page loads
     const fetchCart = async () => {
       try {
-        const response2 = await getmobile({token});
+        const response2 = await getmobile({ token });
 
         setMobileNumber(response2.data.data.mobileNo);
-        setAddress(response2.data.data.deliveryAddress)
-        
+        setAddress(response2.data.data.deliveryAddress);
+
         const response = await getCart({ token }); // Your getCart API to fetch cart items
         if (response?.data?.cart?.items) {
           setItems(response.data.cart.items);
@@ -150,9 +155,20 @@ export default function CheckoutPage() {
     }
   }, [token, getCart]);
 
-  return (
+  return (<>
+  {signInOpen && <SignIn />}
+    {signUpOpen && <SignUp />}
+    {otpOpen && <Otp />}
+    {forgotPasswordOpen && <ForgotPassword />}
     <div className="container mx-auto p-6 max-w-2xl">
       <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Checkout</h1>
+
+      {/* Display a welcome message if logged in */}
+      {token ? (
+        <p className="text-center text-xl mb-6">Welcome back! Proceed with your checkout.</p>
+      ) : (
+        <p className="text-center text-xl mb-6">Please log in to continue.</p>
+      )}
 
       {/* Address Section */}
       <div className="mb-6 bg-white p-6 rounded-lg shadow-xl">
@@ -170,7 +186,7 @@ export default function CheckoutPage() {
           placeholder={address ? 'Edit your address' : 'Enter your full address'}
           className="mt-2 p-4 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
-        
+
         {/* Mobile Number Field */}
         <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mt-4">
           Enter your mobile number:
@@ -210,61 +226,54 @@ export default function CheckoutPage() {
                   {/* Decrement Button */}
                   <button
                     onClick={() => handleDecrement(item)}
-                    className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={item.quantity <= 1}
+                    className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10"
                   >
-                    -
+                    <span>-</span>
                   </button>
-                  {/* Quantity Display */}
-                  <span className="text-lg font-medium">{item.quantity}</span>
                   {/* Increment Button */}
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex items-center justify-center bg-gray-200 border-2 border-gray-400 text-gray-800 rounded-full p-3 w-10 h-10"
                   >
-                    +
+                    <span>+</span>
+                  </button>
+                  {/* Remove Item */}
+                  <button
+                    onClick={() => handleRemoveItem(item)}
+                    className="flex items-center justify-center bg-red-500 border-2 border-red-400 text-white rounded-full p-3 w-10 h-10"
+                  >
+                    <Trash className="w-5 h-5" />
                   </button>
                 </div>
-
-                {/* Remove (Trash Icon) Button */}
-                <button
-                  onClick={() => handleRemoveItem(item)}
-                  className="ml-4 text-red-600 hover:text-red-800 text-sm"
-                >
-                  <Trash className="w-5 h-5" />
-                </button>
               </li>
             ))}
           </ul>
         )}
-
-        <div className="mt-4 space-y-2">
-          <div className="flex justify-between text-sm text-gray-700">
-            <span>Subtotal:</span>
-            <span className="font-bold text-lg">{`₹${subtotal.toFixed(2)}`}</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-700">
-            <span>Delivery Fee:</span>
-            <span className="font-bold text-lg">{`₹${deliveryFee.toFixed(2)}`}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold text-gray-700">
-            <span>Total:</span>
-            <span className="font-bold text-lg">{`₹${total.toFixed(2)}`}</span>
-          </div>
-        </div>
       </div>
 
-      {/* Checkout Button Section */}
-      <div className="flex justify-between items-center mt-6">
-        <div>
-          <button
-            onClick={handleCheckout}
-            className="w-full py-3 px-11 bg-blue-600 text-white rounded-lg shadow-xl hover:bg-blue-700 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-500"
-          >
-            Place Order
-          </button>
-        </div>
+      {/* Total Section */}
+      <div className="flex justify-between text-lg font-semibold mb-6">
+        <span>Subtotal:</span>
+        <span>{`₹${subtotal.toFixed(2)}`}</span>
       </div>
+      <div className="flex justify-between text-lg font-semibold mb-6">
+        <span>Delivery Fee:</span>
+        <span>{`₹${deliveryFee.toFixed(2)}`}</span>
+      </div>
+      <div className="flex justify-between text-xl font-semibold mb-6 border-t pt-4">
+        <span>Total:</span>
+        <span>{`₹${total.toFixed(2)}`}</span>
+      </div>
+
+      {/* Checkout Button */}
+      <button
+        onClick={handleCheckout}
+        disabled={items.length === 0}
+        className="w-full py-3 bg-blue-500 text-white text-xl font-semibold rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+      >
+        {items.length === 0 ? 'Add items to cart' : 'Place Order'}
+      </button>
     </div>
+    </>
   );
 }

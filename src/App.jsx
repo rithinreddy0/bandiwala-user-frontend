@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import Cart from './components/Cart';
 import Profile from './components/Profile/Profile';
 import UserOrderTracking from './components/Profile/Tracker';
-
+import { ToastContainer } from 'react-toastify';
 
 
 export const context=createContext();
@@ -44,6 +44,7 @@ function App() {
   return (
     <context.Provider value={{signInOpen,setSignInOpen,signUpOpen,setSignUpOpen,otpOpen,setOtpOpen,signUpInEmail,setSignUpInEmail,userDetails,setUserDetails,token,setToken,forgotPasswordOpen,setForgotPasswordOpen}}>
     <Router >
+    <ToastContainer />
       <Navbar/>
       <Routes>
         <Route path="/" element={<Home/>} />

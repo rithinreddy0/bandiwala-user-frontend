@@ -70,9 +70,19 @@ export const CartApi = createApi({
         headers:{"Authorization":`Bearer ${token}`},
         method:"POST",
       })
+    }),
+    addReview:build.mutation({
+      query:({orderId,rating,token})=>({
+        url:"addReview",
+        mode:'cors',
+        body:{orderId,rating},
+        headers:{"Authorization":`Bearer ${token}`},
+        method:"POST",
+      })
     })
    
   }),
+
   
 })
 
@@ -85,7 +95,8 @@ export const {
   useCreateorderMutation,
   useGetmobileMutation,
   useGetOrderMutation,
-  useGetAllOrdersMutation
+  useGetAllOrdersMutation,
+  useAddReviewMutation
 } = CartApi
 
 

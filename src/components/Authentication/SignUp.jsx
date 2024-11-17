@@ -4,6 +4,10 @@ import { User, Mail, Lock, UserCheck, ArrowRightCircle, Eye, EyeOff, X } from 'l
 import { context } from '../../App';
 import { useSignUpMutation } from '../../App/Services/AuthenticationApi';
 
+// Toastify imports
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const SignUp = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -11,7 +15,7 @@ const SignUp = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signInOpen, setSignInOpen, signUpOpen, setSignUpOpen, otpOpen, setOtpOpen, signUpInEmail,setSignUpInEmail } = useContext(context);
+  const { signInOpen, setSignInOpen, signUpOpen, setSignUpOpen, otpOpen, setOtpOpen, signUpInEmail, setSignUpInEmail } = useContext(context);
 
   const [signUp] = useSignUpMutation();
 
@@ -22,14 +26,17 @@ const SignUp = () => {
     setError(''); // Clear any previous errors
     if (!username || !email || !password) {
       setError('All fields are required.');
+      toast.error('All fields are required.');
       return;
     }
     if (!validateEmail(email)) {
       setError('Please enter a valid email address.');
+      toast.error('Please enter a valid email address.');
       return;
     }
     if (!validatePassword(password)) {
       setError('Password must be at least 6 characters long.');
+      toast.error('Password must be at least 6 characters long.');
       return;
     }
 
@@ -37,19 +44,20 @@ const SignUp = () => {
     signUp({ name: username, email, password })
       .unwrap()
       .then((response) => {
-          alert(response.message);
-          setLoading(false);
-          setSignUpOpen(false);
-          setSignUpInEmail( email );
-          setOtpOpen(true);
-        
+        toast.success(response.message);
+        setLoading(false);
+        setSignUpOpen(false);
+        setSignUpInEmail(email);
+        setOtpOpen(true);
       })
       .catch((err) => {
         setLoading(false);
         if (err.status === 400) {
           setError(err.data.message);
+          toast.error(err.data.message);
         } else {
           setError('Server error. Please try again later.');
+          toast.error('Server error. Please try again later.');
         }
       });
   };
@@ -150,6 +158,8 @@ const SignUp = () => {
           {loading ? 'Signing Up...' : 'Sign Up'}
         </button>
       </div>
+      {/* Toast Container to render the Toastify notifications */}
+      <ToastContainer />
     </div>
   );
 };
