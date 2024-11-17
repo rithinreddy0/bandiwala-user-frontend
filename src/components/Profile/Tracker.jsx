@@ -49,11 +49,6 @@ export default function UserOrderTracking() {
     if(response.error.status==450){
       toast.error("You have already reviewed this order" );
     }
-    else if (!response.data){
-      toast.error("Failed to add review");
-
-
-    }
     else{
       toast.success("Successfullly Added Review")
     }
