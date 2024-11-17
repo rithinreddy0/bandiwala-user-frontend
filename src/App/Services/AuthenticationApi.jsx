@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 export const AuthApi = createApi({
   reducerPath: 'Auth',  
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://bandiwala-backend.onrender.com/api/users/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:4000/api/users/' }),
   endpoints: (build) => ({
     signUp: build.mutation({
       query: (body) => ({

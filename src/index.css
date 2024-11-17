@@ -13,3 +13,33 @@
    font-weight: bolder;
   }
   
+/* General Card Styling */
+.card {
+  border: 1px solid #e5e7eb; /* Light gray border */
+  border-radius: 0.5rem; /* Rounded corners */
+  padding: 1rem; /* Padding */
+  background-color: white; /* White background */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Responsive Layout */
+@media (min-width: 640px) {
+  .card {
+    flex-direction: row; /* Horizontal layout for larger screens */
+  }
+}
+
+/* Items Grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column by default */
+  gap: 0.5rem; /* Spacing between items */
+}
+
+@media (min-width: 640px) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr); /* Two-column grid for larger screens */
+  }
+}

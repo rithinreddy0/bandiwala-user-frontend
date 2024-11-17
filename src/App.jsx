@@ -20,7 +20,7 @@ function App() {
   const [token,setToken]=useState(localStorage.getItem('token'))
   const [forgotPasswordOpen,setForgotPasswordOpen]=useState(false) 
   const verifyfunctio = async()=>{
-    const response = await fetch('https://bandiwala-backend.onrender.com/api/users/verify', {
+    const response = await fetch('http://localhost:4000/api/users/verify', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',

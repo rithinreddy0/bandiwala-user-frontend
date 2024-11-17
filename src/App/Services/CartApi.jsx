@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 const token = localStorage.getItem('token');
 export const CartApi = createApi({
   reducerPath: 'Cart',  
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://bandiwala-backend.onrender.com/api/users/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:4000/api/users/' }),
   endpoints: (build) => ({
     addCart: build.mutation({
       query: ({item,token}) => ({
@@ -63,6 +63,14 @@ export const CartApi = createApi({
         mode:"cors"
       })
     }),
+    getAllOrders:build.mutation({
+      query:({token})=>({
+        url:"getallorders",
+        mode:'cors',
+        headers:{"Authorization":`Bearer ${token}`},
+        method:"POST",
+      })
+    })
    
   }),
   
@@ -76,7 +84,8 @@ export const {
   useGetCartMutation,
   useCreateorderMutation,
   useGetmobileMutation,
-  useGetOrderMutation
+  useGetOrderMutation,
+  useGetAllOrdersMutation
 } = CartApi
 
 
