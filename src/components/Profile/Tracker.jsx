@@ -31,6 +31,7 @@ export default function UserOrderTracking() {
       if (response.data) {
         setOrderDetails(response.data.order);
         setOrderStatus(response.data.status);
+        console.log(response.data.status)
         setEstimatedTime(response.data.order.status === 'Order Placed' ? 20 : response.data.order.status === 'Accepted' ? 15 : 10);
         setIsDelivered(response.data.order.status === 'Delivered');
       }
