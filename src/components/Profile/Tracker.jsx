@@ -169,7 +169,7 @@ export default function UserOrderTracking() {
             </div>
           </div>
 
-          {orderStatus === 'Delivered' && !isDelivered && (
+          {orderStatus === 'Delivered' && (
             <div className="bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
               <div className="bg-gray-100 text-black p-6">
                 <h2 className="text-sm sm:text-base md:text-lg flex items-center">
