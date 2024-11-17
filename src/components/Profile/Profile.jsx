@@ -11,6 +11,7 @@ export default function Profile() {
   const [getAllOrders] = useGetAllOrdersMutation();
   const [userProfile, setUserProfile] = useState({});
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true); // New loading state
 
   // Handle navigation to the order details page
   const handle = (orderID) => {
@@ -21,10 +22,12 @@ export default function Profile() {
     const fetchProfileAndOrders = async () => {
       if (!token) {
         console.warn("No token available.");
+        setLoading(false);
         return;
       }
 
       try {
+        setLoading(true); // Set loading to true before fetching
         // Fetch User Profile
         const response = await getmobile({ token });
         if (response?.data?.data) {
@@ -42,6 +45,8 @@ export default function Profile() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched or error occurs
       }
     };
 
@@ -63,19 +68,26 @@ export default function Profile() {
       {/* Profile Section */}
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-4">
         <div className="flex-1">
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">{userProfile.name || "Guest"}</h2>
-          <div className="flex items-center text-sm sm:text-base text-gray-600 mb-1">
-            <Phone className="w-5 h-5 mr-2" />
-            {userProfile.mobileNo || "N/A"}
-          </div>
-          <div className="flex items-center text-sm sm:text-base text-gray-600 mb-1">
-            <Mail className="w-5 h-5 mr-2" />
-            {userProfile.email || "N/A"}
-          </div>
-          <div className="flex items-center text-sm sm:text-base text-gray-600">
-            <MapPin className="w-5 h-5 mr-2" />
-            {userProfile.deliveryAddress || "N/A"}
-          </div>
+          {/* Loading Profile */}
+          {loading ? (
+            <div className="text-center text-gray-500">Loading Profile...</div>
+          ) : (
+            <>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{userProfile.name || "Guest"}</h2>
+              <div className="flex items-center text-sm sm:text-base text-gray-600 mb-1">
+                <Phone className="w-5 h-5 mr-2" />
+                {userProfile.mobileNo || "N/A"}
+              </div>
+              <div className="flex items-center text-sm sm:text-base text-gray-600 mb-1">
+                <Mail className="w-5 h-5 mr-2" />
+                {userProfile.email || "N/A"}
+              </div>
+              <div className="flex items-center text-sm sm:text-base text-gray-600">
+                <MapPin className="w-5 h-5 mr-2" />
+                {userProfile.deliveryAddress || "N/A"}
+              </div>
+            </>
+          )}
         </div>
         <button
           onClick={handleLogout}
@@ -90,27 +102,34 @@ export default function Profile() {
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
         <h3 className="text-lg sm:text-xl font-semibold mb-4">Your Orders</h3>
 
-        {/* Delivering Orders */}
-        {deliveringOrders.length > 0 && (
+        {/* Loading state for orders */}
+        {loading ? (
+          <div className="text-center text-gray-500">Loading Orders...</div>
+        ) : (
           <>
-            <h4 className="text-md sm:text-lg font-semibold text-orange-600 mb-2">Now Delivering</h4>
-            <div className="space-y-4">
-              {deliveringOrders.map((order) => (
-                <OrderCard key={order._id} order={order} handle={handle} />
-              ))}
-            </div>
-          </>
-        )}
+            {/* Delivering Orders */}
+            {deliveringOrders.length > 0 && (
+              <>
+                <h4 className="text-md sm:text-lg font-semibold text-orange-600 mb-2">Now Delivering</h4>
+                <div className="space-y-4">
+                  {deliveringOrders.map((order) => (
+                    <OrderCard key={order._id} order={order} handle={handle} />
+                  ))}
+                </div>
+              </>
+            )}
 
-        {/* Delivered Orders */}
-        {deliveredOrders.length > 0 && (
-          <>
-            <h4 className="text-md sm:text-lg font-semibold text-gray-700 mt-6 mb-2">Delivered</h4>
-            <div className="space-y-4">
-              {deliveredOrders.map((order) => (
-                <OrderCard key={order._id} order={order} handle={handle} />
-              ))}
-            </div>
+            {/* Delivered Orders */}
+            {deliveredOrders.length > 0 && (
+              <>
+                <h4 className="text-md sm:text-lg font-semibold text-gray-700 mt-6 mb-2">Delivered</h4>
+                <div className="space-y-4">
+                  {deliveredOrders.map((order) => (
+                    <OrderCard key={order._id} order={order} handle={handle} />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
